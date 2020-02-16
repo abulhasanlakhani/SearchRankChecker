@@ -1,0 +1,27 @@
+﻿@model Search
+
+<form asp-action="Search" method="post" class="form-horizontal" role="form">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="form-group">
+        <label asp-for="UrlToSearch" class="col-md-2 control-label"></label>
+        <div class="col-12">
+            <input asp-for="UrlToSearch" class="form-control" />
+            <span asp-validation-for="UrlToSearch" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="SearchKeywords" class="col-md-2 control-label"></label>
+        <div class="col-12">
+            <input asp-for="SearchKeywords" class="form-control" />
+            <span asp-validation-for="SearchKeywords" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-12">
+            <input type="submit" class="btn btn-primary" value="Find Rank(s)" />
+        </div>
+    </div>
+</form>
