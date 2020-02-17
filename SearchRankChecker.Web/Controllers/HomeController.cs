@@ -46,7 +46,7 @@ namespace SearchRankChecker.Web.Controllers
                 return View(nameof(Index));
             }
             
-            var searchResults = await _crawlerService.GetSearchResults(urlToSearch, searchModel.SearchKeywords);
+            var searchResults = await _crawlerService.GetSearchResults(searchModel.SearchKeywords);
 
             return _GetSearchRank(searchResults, urlToSearch);
         }

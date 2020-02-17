@@ -20,18 +20,20 @@ namespace SearchRankChecker.Business.Services
         /// <summary>
         /// Uses HttpClient to crawl Google Search and bring the results as string
         /// </summary>
-        /// <param name="urlToSearch"></param>
         /// <param name="searchTerms"></param>
         /// <returns></returns>
-        public async Task<string> GetSearchResults(Uri urlToSearch, string searchTerms)
+        public async Task<string> GetSearchResults(string searchTerms)
         {
-            var cancellationTokenSource = new CancellationTokenSource();
+            if (string.IsNullOrEmpty(searchTerms))
+                throw new ArgumentException("Search terms must be provided!");
 
             var query = BuildCrawlQuery(searchTerms);
             
             var httpClient = _httpClientFactory.CreateClient(nameof(HttpClientsEnum.GoogleClient));
 
             var request = new HttpRequestMessage(HttpMethod.Get, query);
+
+            var cancellationTokenSource = new CancellationTokenSource();
 
             using var response =
                 await httpClient.GetAsync(request.RequestUri, cancellationTokenSource.Token);

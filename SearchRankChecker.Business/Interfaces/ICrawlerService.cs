@@ -1,10 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace SearchRankChecker.Business.Interfaces
 {
     public interface ICrawlerService
     {
-        Task<string> GetSearchResults(Uri urlToSearch, string searchTerms);
+        Task<string> GetSearchResults(string searchTerms);
     }
 }
