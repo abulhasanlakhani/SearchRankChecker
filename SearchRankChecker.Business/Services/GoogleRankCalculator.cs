@@ -21,6 +21,9 @@ namespace SearchRankChecker.Business.Services
         public string GetUrlRanksFromSearchResults(string searchResult, Uri url)
         {
             var lookup = Configuration["HttpClients:GoogleClient:LookupRegex"];
+
+            if (string.IsNullOrEmpty(lookup))
+                throw new ArgumentException("Lookup up regex not found!");
             
             var rankList = new List<string>();
             var ranks = new StringBuilder();

@@ -9,11 +9,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{91113BD7
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{F5A48A13-F822-4C43-8284-DB163AEA1B8E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchRankChecker.Web", "SearchRankChecker.Web\SearchRankChecker.Web.csproj", "{2E6EBE83-E01F-41D6-9D60-64E2D86FFE33}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchRankChecker.Web", "SearchRankChecker.Web\SearchRankChecker.Web.csproj", "{2E6EBE83-E01F-41D6-9D60-64E2D86FFE33}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchRankChecker.Business", "SearchRankChecker.Business\SearchRankChecker.Business.csproj", "{701B2059-F076-451C-B441-8292795C01CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchRankChecker.Business", "SearchRankChecker.Business\SearchRankChecker.Business.csproj", "{701B2059-F076-451C-B441-8292795C01CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchRankChecker.Domain", "SearchRankChecker.Domain\SearchRankChecker.Domain.csproj", "{6A29301F-9642-4EC9-A082-61E00AD596D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SearchRankChecker.Domain", "SearchRankChecker.Domain\SearchRankChecker.Domain.csproj", "{6A29301F-9642-4EC9-A082-61E00AD596D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearchRankChecker.Tests", "SearchRankChecker.Tests\SearchRankChecker.Tests.csproj", "{FC27D2B3-4D15-4A02-9DB7-C23DA8DDFA67}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{6A29301F-9642-4EC9-A082-61E00AD596D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A29301F-9642-4EC9-A082-61E00AD596D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A29301F-9642-4EC9-A082-61E00AD596D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC27D2B3-4D15-4A02-9DB7-C23DA8DDFA67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC27D2B3-4D15-4A02-9DB7-C23DA8DDFA67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC27D2B3-4D15-4A02-9DB7-C23DA8DDFA67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC27D2B3-4D15-4A02-9DB7-C23DA8DDFA67}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -41,6 +47,7 @@ Global
 		{2E6EBE83-E01F-41D6-9D60-64E2D86FFE33} = {C1288190-AE80-4565-93E4-89320DB32674}
 		{701B2059-F076-451C-B441-8292795C01CA} = {F5A48A13-F822-4C43-8284-DB163AEA1B8E}
 		{6A29301F-9642-4EC9-A082-61E00AD596D9} = {F5A48A13-F822-4C43-8284-DB163AEA1B8E}
+		{FC27D2B3-4D15-4A02-9DB7-C23DA8DDFA67} = {91113BD7-55AA-4D0C-8F30-AA37D19AB7E1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {485DB137-DB40-42A0-88DB-86BE315D5A1E}

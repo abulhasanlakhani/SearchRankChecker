@@ -34,7 +34,7 @@ namespace SearchRankChecker.Business.Services
             var request = new HttpRequestMessage(HttpMethod.Get, query);
 
             using var response =
-                await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationTokenSource.Token);
+                await httpClient.GetAsync(request.RequestUri, cancellationTokenSource.Token);
             
             response.EnsureSuccessStatusCode();
 
