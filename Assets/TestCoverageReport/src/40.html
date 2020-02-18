@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>D:\Git\SearchRankChecker\SearchRankChecker.Web\Startup.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.Globalization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using SearchRankChecker.Business.Interfaces;
+using SearchRankChecker.Business.Services;
+using SearchRankChecker.Domain.Enums;
+
+namespace SearchRankChecker.Web
+{
+    public class Startup
+    {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddControllersWithViews();
+
+            services.AddHttpClient(nameof(HttpClientsEnum.GoogleClient), client =&gt;
+            {
+                client.BaseAddress = new Uri(Configuration.GetValue&lt;string&gt;(&quot;HttpClients:GoogleClient:BaseAddress&quot;));
+                client.Timeout = new TimeSpan(0, 0, 30);
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Add(&quot;User-Agent&quot;, Configuration.GetValue&lt;string&gt;(&quot;UserAgents:Chrome&quot;));
+            });
+
+            services.AddScoped&lt;ICrawlerService, GoogleCrawlerService&gt;();
+            services.AddScoped&lt;IRankCalculator, GoogleRankCalculator&gt;();
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler(&quot;/Home/Error&quot;);
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
+
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture(new CultureInfo(&quot;en-AU&quot;))
+            });
+
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =&gt;
+            {
+                endpoints.MapControllerRoute(
+                    name: &quot;default&quot;,
+                    pattern: &quot;{controller=Home}/{action=Index}/{id?}&quot;);
+            });
+        }
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[17,9,17,53,0],[18,9,18,10,0],[19,13,19,43,0],[20,9,20,10,0],[22,47,22,51,0],[26,9,26,10,0],[27,13,27,48,0],[29,13,30,13,0],[30,13,30,14,0],[30,14,31,17,0],[31,17,31,118,0],[31,118,32,17,0],[32,17,32,57,0],[32,57,33,17,0],[33,17,33,54,0],[33,54,34,17,0],[34,17,34,117,0],[34,117,35,13,0],[35,13,35,14,0],[35,14,35,16,0],[29,13,35,16,0],[37,13,37,73,0],[38,13,38,73,0],[39,9,39,10,0],[43,9,43,10,0],[44,13,44,37,0],[45,13,45,14,0],[46,17,46,49,0],[47,13,47,14,0],[49,13,49,14,0],[50,17,50,56,0],[52,17,52,31,0],[53,13,53,14,0],[55,13,58,16,0],[60,13,60,39,0],[61,13,61,34,0],[63,13,63,30,0],[65,13,65,36,0],[67,13,68,13,0],[68,13,68,14,0],[68,14,69,17,0],[69,17,71,72,0],[71,72,72,13,0],[72,13,72,14,0],[72,14,72,16,0],[67,13,72,16,0],[73,9,73,10,0]]);
+    </script>
+  </body>
+</html>

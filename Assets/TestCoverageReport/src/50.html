@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>D:\Git\SearchRankChecker\SearchRankChecker.Tests\GoogleCrawlerServiceTests.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Moq.Protected;
+using NUnit.Framework;
+using SearchRankChecker.Business.Interfaces;
+using SearchRankChecker.Business.Services;
+
+namespace SearchRankChecker.Tests
+{
+    [TestFixture]
+    public class GoogleCrawlerServiceTests
+    {
+        private Mock&lt;ILogger&lt;GoogleCrawlerService&gt;&gt; _logger;
+        private Mock&lt;IConfiguration&gt; _mockConfig;
+
+        [SetUp]
+        public void Setup()
+        {
+            _logger = new Mock&lt;ILogger&lt;GoogleCrawlerService&gt;&gt;();
+            _mockConfig = new Mock&lt;IConfiguration&gt;();
+        }
+
+        [Test]
+        public async Task Test_Get_Search_Results_Success()
+        {
+            // ARRANGE
+            var expectedSearchResultString =
+                &quot;&lt;div class=\&quot;r\&quot;&gt;&lt;a href=\&quot;http://www.infotrack.com.au\&quot;&gt;Test Dummy Data&lt;/a&gt;&lt;/div&gt;&quot;;
+
+            var httpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(expectedSearchResultString)
+            };
+
+            var handlerMockObject = GetHandlerMock(httpResponseMessage);
+
+            var mockIHttpClientFactoryObject = GetMockIHttpClientFactory(handlerMockObject);
+
+            // ACT
+
+            ICrawlerService crawlerService = new GoogleCrawlerService(mockIHttpClientFactoryObject, _logger.Object, _mockConfig.Object);
+            
+            var actualSearchResults = await crawlerService.GetSearchResults(&quot;online title search&quot;);
+
+            // ASSERT
+
+            Assert.That(actualSearchResults, Is.Not.Empty);
+            Assert.That(actualSearchResults, Is.EqualTo(expectedSearchResultString));
+        }
+
+        [Test]
+        public void Test_Get_Search_Results_Not_Success_Status_Code()
+        {
+            // ARRANGE
+            var expectedSearchResultString =
+                &quot;&lt;div class=\&quot;r\&quot;&gt;&lt;a href=\&quot;http://www.infotrack.com.au\&quot;&gt;Test Dummy Data&lt;/a&gt;&lt;/div&gt;&quot;;
+
+            var httpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Content = new StringContent(expectedSearchResultString)
+            };
+
+            var handlerMockObject = GetHandlerMock(httpResponseMessage);
+
+            var mockIHttpClientFactoryObject = GetMockIHttpClientFactory(handlerMockObject);
+
+            // ACT
+
+            ICrawlerService crawlerService = new GoogleCrawlerService(mockIHttpClientFactoryObject, _logger.Object, _mockConfig.Object);
+            
+            // ASSERT
+
+            Assert.ThrowsAsync&lt;HttpRequestException&gt;(async () =&gt;
+                await crawlerService.GetSearchResults(&quot;online title search&quot;), &quot;Bad Request&quot;);
+        }
+
+        [Test]
+        public void Test_Get_Search_Results_Without_Providing_Search_Terms()
+        {
+            // ARRANGE
+            var expectedSearchResultString =
+                &quot;&lt;div class=\&quot;r\&quot;&gt;&lt;a href=\&quot;http://www.infotrack.com.au\&quot;&gt;Test Dummy Data&lt;/a&gt;&lt;/div&gt;&quot;;
+
+            var httpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Content = new StringContent(expectedSearchResultString)
+            };
+
+            var handlerMockObject = GetHandlerMock(httpResponseMessage);
+
+            var mockIHttpClientFactoryObject = GetMockIHttpClientFactory(handlerMockObject);
+
+            // ACT
+
+            ICrawlerService crawlerService = new GoogleCrawlerService(mockIHttpClientFactoryObject, _logger.Object, _mockConfig.Object);
+            
+            // ASSERT
+
+            Assert.ThrowsAsync&lt;ArgumentException&gt;(async () =&gt;
+                await crawlerService.GetSearchResults(&quot;&quot;), &quot;Search terms must be provided!&quot;);
+        }
+
+        [Test]
+        public async Task Test_Get_Search_Results_With_Max_Search_Search_Results_Config()
+        {
+            // ARRANGE
+            var expectedSearchResultString =
+                &quot;&lt;div class=\&quot;r\&quot;&gt;&lt;a href=\&quot;http://www.infotrack.com.au\&quot;&gt;Test Dummy Data&lt;/a&gt;&lt;/div&gt;&quot;;
+
+            _mockConfig.SetupGet(c =&gt; c[&quot;HttpClients:GoogleClient:MaxSearchResults&quot;])
+                .Returns(&quot;100&quot;)
+                .Verifiable();
+
+            var httpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(expectedSearchResultString)
+            };
+
+            var handlerMockObject = GetHandlerMock(httpResponseMessage);
+
+            var mockIHttpClientFactoryObject = GetMockIHttpClientFactory(handlerMockObject);
+
+            // ACT
+
+            ICrawlerService crawlerService = new GoogleCrawlerService(mockIHttpClientFactoryObject, _logger.Object, _mockConfig.Object);
+            var searchResults = await crawlerService.GetSearchResults(&quot;online title search&quot;);
+            
+            // ASSERT
+            _mockConfig.Verify(mock =&gt; mock[&quot;HttpClients:GoogleClient:MaxSearchResults&quot;], Times.Once);
+
+        }
+
+        /// &lt;summary&gt;
+        /// 
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;httpResponseMessage&quot;&gt;&lt;/param&gt;
+        /// &lt;returns&gt;&lt;/returns&gt;
+        private HttpMessageHandler GetHandlerMock(HttpResponseMessage httpResponseMessage)
+        {
+            var handlerMock = new Mock&lt;HttpMessageHandler&gt;(MockBehavior.Strict);
+            handlerMock.Protected()
+                // Setup the PROTECTED method to mock
+                .Setup&lt;Task&lt;HttpResponseMessage&gt;&gt;(
+                    &quot;SendAsync&quot;,
+                    ItExpr.IsAny&lt;HttpRequestMessage&gt;(),
+                    ItExpr.IsAny&lt;CancellationToken&gt;()
+                )
+                // prepare the expected response of the mocked http call
+                .ReturnsAsync(httpResponseMessage)
+                .Verifiable();
+
+            return handlerMock.Object;
+        }
+
+        /// &lt;summary&gt;
+        /// 
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;handlerMockObject&quot;&gt;&lt;/param&gt;
+        /// &lt;returns&gt;&lt;/returns&gt;
+        private IHttpClientFactory GetMockIHttpClientFactory(HttpMessageHandler handlerMockObject)
+        {
+            // use real http client with mocked handler here
+            var httpClient = new HttpClient(handlerMockObject)
+            {
+                BaseAddress = new Uri(&quot;http://test.com/&quot;),
+            };
+
+            var mockHttpClientFactory = new Mock&lt;IHttpClientFactory&gt;();
+
+            mockHttpClientFactory.Setup(_ =&gt; _.CreateClient(It.IsAny&lt;string&gt;())).Returns(httpClient);
+
+            return mockHttpClientFactory.Object;
+        }
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[24,9,24,10,1],[25,13,25,65,1],[26,13,26,54,1],[27,9,27,10,1],[31,9,31,10,1],[33,13,34,102,1],[36,13,40,15,1],[42,13,42,73,1],[44,13,44,93,1],[48,13,48,137,1],[50,13,50,100,1],[54,13,54,60,1],[55,13,55,86,1],[56,9,56,10,1],[60,9,60,10,1],[62,13,63,102,1],[65,13,69,15,1],[71,13,71,73,1],[73,13,73,93,1],[77,13,77,137,1],[81,13,82,17,1],[82,17,82,77,1],[82,77,82,94,1],[81,13,82,94,1],[83,9,83,10,1],[87,9,87,10,1],[89,13,90,102,1],[92,13,96,15,1],[98,13,98,73,1],[100,13,100,93,1],[104,13,104,137,1],[108,13,109,17,1],[109,17,109,58,1],[109,58,109,94,1],[108,13,109,94,1],[110,9,110,10,1],[114,9,114,10,1],[116,13,117,102,1],[119,13,121,31,1],[123,13,127,15,1],[129,13,129,73,1],[131,13,131,93,1],[135,13,135,137,1],[136,13,136,94,1],[139,13,139,103,1],[141,9,141,10,1],[149,9,149,10,1],[150,13,150,81,1],[151,13,160,31,1],[162,13,162,39,1],[163,9,163,10,1],[171,9,171,10,1],[173,13,176,15,1],[178,13,178,72,1],[180,13,180,102,1],[182,13,182,49,1],[183,9,183,10,1]]);
+    </script>
+  </body>
+</html>

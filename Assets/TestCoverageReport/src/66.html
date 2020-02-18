@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>D:\Git\SearchRankChecker\SearchRankChecker.Tests\HomeControllerTests.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Moq;
+using NUnit.Framework;
+using SearchRankChecker.Business.Interfaces;
+using SearchRankChecker.Domain.Models;
+using SearchRankChecker.Web.Controllers;
+using SearchRankChecker.Web.ViewModels;
+
+namespace SearchRankChecker.Tests
+{
+    [TestFixture]
+    public class HomeControllerTests
+    {
+        private Mock&lt;ICrawlerService&gt; _mockCrawlService;
+        private Mock&lt;IRankCalculator&gt; _mockRankCalculator;
+        private Mock&lt;ILogger&lt;HomeController&gt;&gt; _mockLogger;
+        private HomeController _homeController;
+
+
+        [SetUp]
+        public void Setup()
+        {
+            _mockCrawlService = new Mock&lt;ICrawlerService&gt;();
+            _mockRankCalculator = new Mock&lt;IRankCalculator&gt;();
+            _mockLogger = new Mock&lt;ILogger&lt;HomeController&gt;&gt;();
+
+            _homeController = new HomeController(_mockCrawlService.Object, _mockRankCalculator.Object, _mockLogger.Object);
+        }
+
+        [Test]
+        public void Search_Get_Action_Returns_View_Result_With_Empty_Rank_String()
+        {
+            var result = _homeController.Index(new SearchViewModel { RankString = &quot;&quot; });
+
+            Assert.That(result, Is.TypeOf&lt;ViewResult&gt;());
+        }
+
+        [Test]
+        public async Task Search_Post_Action_Returns_View_Result_With_Rank_String()
+        {
+            //mockCrawlService.Setup(_ =&gt; _.GetSearchResults(It.IsAny&lt;string&gt;())).Returns(new Task&lt;string&gt;(() =&gt; &quot;100&quot;));
+
+            var result = await _homeController.Search(new Search
+            {
+                SearchKeywords = &quot;online title search&quot;,
+                UrlToSearch = &quot;http://www.infotrack.com.au&quot;
+            });
+
+            var redirectToActionResult = (RedirectToActionResult) result;
+            
+            Assert.That(result, Is.TypeOf&lt;RedirectToActionResult&gt;());
+            Assert.That(redirectToActionResult.ActionName, Is.EqualTo(&quot;Index&quot;));
+        }
+
+        [Test]
+        public async Task Search_Post_Action_Returns_Error_View_When_Model_State_Invalid()
+        {
+            _homeController.ModelState.AddModelError(&quot;Dummy Error&quot;, &quot;Dummy Error Message&quot;);
+
+            var result = await _homeController.Search(new Search
+            {
+                SearchKeywords = &quot;online title search&quot;,
+                UrlToSearch = &quot;http://www.infotrack.com.au&quot;
+            });
+
+            var viewResult = (ViewResult) result;
+            
+            Assert.That(result, Is.TypeOf&lt;ViewResult&gt;());
+            Assert.That(viewResult.ViewName, Is.EqualTo(&quot;Index&quot;));
+            _mockLogger.VerifyAll();
+        }
+
+        [Test]
+        public async Task Search_Post_Action_Returns_Error_View_When_Uri_Is_Invalid()
+        {
+            var result = await _homeController.Search(new Search
+            {
+                SearchKeywords = &quot;online title search&quot;,
+                UrlToSearch = &quot;http:wwwinfotrack.com.au&quot;
+            });
+
+            var viewResult = (ViewResult) result;
+            
+            Assert.That(result, Is.TypeOf&lt;ViewResult&gt;());
+            Assert.That(viewResult.ViewName, Is.EqualTo(&quot;Index&quot;));
+            _mockLogger.VerifyAll();
+        }
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[24,9,24,10,1],[25,13,25,61,1],[26,13,26,63,1],[27,13,27,63,1],[29,13,29,124,1],[30,9,30,10,1],[34,9,34,10,1],[35,13,35,89,1],[37,13,37,58,1],[38,9,38,10,1],[42,9,42,10,1],[45,13,49,16,1],[51,13,51,74,1],[53,13,53,70,1],[54,13,54,81,1],[55,9,55,10,1],[59,9,59,10,1],[60,13,60,92,1],[62,13,66,16,1],[68,13,68,50,1],[70,13,70,58,1],[71,13,71,67,1],[72,13,72,37,1],[73,9,73,10,1],[77,9,77,10,1],[78,13,82,16,1],[84,13,84,50,1],[86,13,86,58,1],[87,13,87,67,1],[88,13,88,37,1],[89,9,89,10,1]]);
+    </script>
+  </body>
+</html>

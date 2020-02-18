@@ -40,11 +40,20 @@ namespace SearchRankChecker.Business.Services
 
             var matches = Regex.Matches(searchResult, lookup);
             
+            var urlToMatch = url.Host;
+
+            var directoryPathConfig = Configuration["SearchDefaults:DirectoryPath"];
+
+            if (!string.IsNullOrEmpty(directoryPathConfig))
+            {
+                urlToMatch += directoryPathConfig;
+            }
+
             for (var i = 0; i < matches.Count; i++)
             {
                 var match = matches[i].Groups[2].Value;
                 
-                if (match.Contains(url.Host))
+                if (match.Contains(urlToMatch))
                     rankList.Add(Convert.ToString(i + 1));
             }
             

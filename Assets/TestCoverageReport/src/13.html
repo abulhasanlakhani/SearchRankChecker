@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>D:\Git\SearchRankChecker\SearchRankChecker.Domain\Models\Search.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.ComponentModel.DataAnnotations;
+
+namespace SearchRankChecker.Domain.Models
+{
+    public class Search
+    {
+        [Required(ErrorMessage = &quot;Please enter the url&quot;)]
+        [StringLength(50)]
+        [Display(Name = &quot;Url To Search&quot;)]
+        public string UrlToSearch { get; set; }
+        
+        [Required(ErrorMessage = &quot;Please enter the search keywords&quot;)]
+        [StringLength(50)]
+        [Display(Name = &quot;Search Keywords&quot;)]
+        public string SearchKeywords { get; set; }
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[10,37,10,41,1],[10,42,10,46,1],[15,40,15,44,1],[15,45,15,49,1]]);
+    </script>
+  </body>
+</html>

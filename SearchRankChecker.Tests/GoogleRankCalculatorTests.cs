@@ -87,7 +87,7 @@ namespace SearchRankChecker.Tests
         }
 
         [Test]
-        public void Argument_Exception_Should_Be_Thrown_If_Search_Results_Not_Provided()
+        public void Rank_String_Should_Be_Zero_If_Search_Results_Not_Provided()
         {
             _mockConfig.SetupGet(c => c[LookupRegexConfig])
                 .Returns("(<div class=\"r\"><a href=\"(.*?)\">)");
@@ -98,6 +98,24 @@ namespace SearchRankChecker.Tests
                 new Uri("http://www.infotrack.com.au"));
 
             Assert.That(ranks, Is.EqualTo("0"));
+        }
+
+        [Test]
+        public void Directory_Path_Should_Be_Appended_If_Provided_In_Config()
+        {
+            _mockConfig.SetupGet(c => c[LookupRegexConfig])
+                .Returns("(<div class=\"r\"><a href=\"(.*?)\">)");
+
+            _mockConfig.SetupGet(c => c["SearchDefaults:DirectoryPath"])
+                .Returns("/blah/blah");
+
+            var searchResults = "<div class=\"r\"><a href=\"http://www.infotrack.com.au/blah/blah\">Test Dummy Data</a></div>" +
+                "<div class=\"r\"><a href=\"http://www.infotrack.com.au/doh/blah\">Test Dummy Data</a></div>";
+
+            var ranks = _googleRankCalculatorService.GetUrlRanksFromSearchResults(searchResults,
+                new Uri("http://www.infotrack.com.au"));
+
+            Assert.That(ranks, Is.EqualTo("1"));
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -40,8 +41,6 @@ namespace SearchRankChecker.Tests
         [Test]
         public async Task Search_Post_Action_Returns_View_Result_With_Rank_String()
         {
-            //mockCrawlService.Setup(_ => _.GetSearchResults(It.IsAny<string>())).Returns(new Task<string>(() => "100"));
-
             var result = await _homeController.Search(new Search
             {
                 SearchKeywords = "online title search",
