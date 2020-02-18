@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using SearchRankChecker.Business.Interfaces;
@@ -13,12 +14,15 @@ namespace SearchRankChecker.Tests
         private const string LookupRegexConfig = "HttpClients:GoogleClient:LookupRegex";
         private Mock<IConfiguration> _mockConfig;
         private IRankCalculator _googleRankCalculatorService;
+        private Mock<ILogger<GoogleRankCalculator>> _logger;
 
         [SetUp]
         public void Setup()
         {
             _mockConfig = new Mock<IConfiguration>();
-            _googleRankCalculatorService = new GoogleRankCalculator(_mockConfig.Object);
+            _logger = new Mock<ILogger<GoogleRankCalculator>>();
+
+            _googleRankCalculatorService = new GoogleRankCalculator(_mockConfig.Object, _logger.Object);
         }
 
         [Test]
@@ -80,6 +84,20 @@ namespace SearchRankChecker.Tests
                 .GetUrlRanksFromSearchResults(searchResults, new Uri("http://www.infotrack.com.au")));
 
             Assert.That(lookupException.Message, Is.EqualTo("Lookup up regex not found!"));
+        }
+
+        [Test]
+        public void Argument_Exception_Should_Be_Thrown_If_Search_Results_Not_Provided()
+        {
+            _mockConfig.SetupGet(c => c[LookupRegexConfig])
+                .Returns("(<div class=\"r\"><a href=\"(.*?)\">)");
+
+            var searchResults = "";
+
+            var ranks = _googleRankCalculatorService.GetUrlRanksFromSearchResults(searchResults,
+                new Uri("http://www.infotrack.com.au"));
+
+            Assert.That(ranks, Is.EqualTo("0"));
         }
     }
 }

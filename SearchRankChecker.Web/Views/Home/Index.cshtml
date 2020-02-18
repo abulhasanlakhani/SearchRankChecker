@@ -1,4 +1,4 @@
-﻿@model string
+﻿@model SearchViewModel
 @{
     ViewData["Title"] = "Home Page";
 }
@@ -8,15 +8,32 @@
     <p>Enter your site url and search terms to see where your site ranks in the search.</p>
 </div>
 
+<form asp-action="SetLanguage" method="post" class="form-horizontal" role="form">
+    <div class="form-group">
+        <label asp-for="SearchRegion" class="col-md-2 control-label"></label>
+        <div class="col-12">
+            <select asp-for="SearchRegion">
+                <option value="en-AU">Australia</option>
+                <option value="en-NZ">New Zealand</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-12">
+            <input type="submit" class="btn btn-primary" value="Set Search Region" />
+        </div>
+    </div>
+</form>
+
 <partial name="SearchRank" model="new Search()" />
 
-@if (!string.IsNullOrEmpty(Model))
+@if (!string.IsNullOrEmpty(Model.RankString))
 {
     <div class="container">
         <div class="row">
             <div class="col-12">
                 <h2>Search Rank:</h2>
-                <p>@Model</p>
+                <p>@Model.RankString</p>
             </div>
         </div>
     </div>
