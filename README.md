@@ -45,7 +45,7 @@ If we had more time, we could have probably replaced the partial view with **Vie
 
 ### Google Search and Region
 
-Even when we are using http://google.com.au as the search engine url, the results returned by Google Search is New Zealand based. We are currently resolving this issue by adding australia at the end of the search keywords as seen in the attached image.
+Even when we are using <http://google.com.au> as the search engine url, the results returned by Google Search is New Zealand based. We are currently resolving this issue by adding australia at the end of the search keywords as seen in the attached image.
 
 We attempted to override the Culture and UI Culture of the default thread by adding the dropdown on the UI (See Screenshot) and the code below:
 
@@ -58,6 +58,8 @@ public IActionResult SetLanguage(SearchViewModel searchViewModel)
 
     CultureInfo.DefaultThreadCurrentCulture = newCulture;
     CultureInfo.DefaultThreadCurrentUICulture = newCulture;
+    CultureInfo.CurrentCulture = newCulture;
+    CultureInfo.CurrentUICulture = newCulture;
 
     return RedirectToAction(nameof(Index), new SearchViewModel
     {
