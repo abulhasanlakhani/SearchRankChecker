@@ -8,4 +8,4 @@ install:
 
 script:
   - dotnet build
-  - dotnet test Tests/SearchRankChecker.Tests/SearchRankChecker.Tests.csproj
+  - dotnet test SearchRankChecker.Tests/SearchRankChecker.Tests.csproj
