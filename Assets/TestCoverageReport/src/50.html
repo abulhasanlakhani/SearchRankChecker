@@ -2,201 +2,87 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <title>D:\Git\SearchRankChecker\SearchRankChecker.Tests\GoogleCrawlerServiceTests.cs</title>
+    <title>D:\Git\SearchRankChecker\SearchRankChecker.Business\Services\RankCalculatorService.cs</title>
     <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
     <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
   </head>
   <body>
     <pre id="content" class="source-code">
 using System;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Moq;
-using Moq.Protected;
-using NUnit.Framework;
+using Microsoft.Extensions.Options;
 using SearchRankChecker.Business.Interfaces;
-using SearchRankChecker.Business.Services;
+using SearchRankChecker.Domain.Models;
 
-namespace SearchRankChecker.Tests
+namespace SearchRankChecker.Business.Services
 {
-    [TestFixture]
-    public class GoogleCrawlerServiceTests
+    public class RankCalculatorService : IRankCalculator
     {
-        private Mock&lt;ILogger&lt;GoogleCrawlerService&gt;&gt; _logger;
-        private Mock&lt;IConfiguration&gt; _mockConfig;
+        private readonly ILogger&lt;RankCalculatorService&gt; _logger;
+        public IConfiguration Configuration { get; }
+        private readonly IOptions&lt;AppSettings&gt; _settings;
 
-        [SetUp]
-        public void Setup()
+        public RankCalculatorService(IConfiguration configuration, ILogger&lt;RankCalculatorService&gt; logger, IOptions&lt;AppSettings&gt; settings)
         {
-            _logger = new Mock&lt;ILogger&lt;GoogleCrawlerService&gt;&gt;();
-            _mockConfig = new Mock&lt;IConfiguration&gt;();
+            Configuration = configuration;
+            _logger = logger;
+            _settings = settings;
         }
-
-        [Test]
-        public async Task Test_Get_Search_Results_Success()
-        {
-            // ARRANGE
-            var expectedSearchResultString =
-                &quot;&lt;div class=\&quot;r\&quot;&gt;&lt;a href=\&quot;http://www.infotrack.com.au\&quot;&gt;Test Dummy Data&lt;/a&gt;&lt;/div&gt;&quot;;
-
-            var httpResponseMessage = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(expectedSearchResultString)
-            };
-
-            var handlerMockObject = GetHandlerMock(httpResponseMessage);
-
-            var mockIHttpClientFactoryObject = GetMockIHttpClientFactory(handlerMockObject);
-
-            // ACT
-
-            ICrawlerService crawlerService = new GoogleCrawlerService(mockIHttpClientFactoryObject, _logger.Object, _mockConfig.Object);
-            
-            var actualSearchResults = await crawlerService.GetSearchResults(&quot;online title search&quot;);
-
-            // ASSERT
-
-            Assert.That(actualSearchResults, Is.Not.Empty);
-            Assert.That(actualSearchResults, Is.EqualTo(expectedSearchResultString));
-        }
-
-        [Test]
-        public void Test_Get_Search_Results_Not_Success_Status_Code()
-        {
-            // ARRANGE
-            var expectedSearchResultString =
-                &quot;&lt;div class=\&quot;r\&quot;&gt;&lt;a href=\&quot;http://www.infotrack.com.au\&quot;&gt;Test Dummy Data&lt;/a&gt;&lt;/div&gt;&quot;;
-
-            var httpResponseMessage = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.BadRequest,
-                Content = new StringContent(expectedSearchResultString)
-            };
-
-            var handlerMockObject = GetHandlerMock(httpResponseMessage);
-
-            var mockIHttpClientFactoryObject = GetMockIHttpClientFactory(handlerMockObject);
-
-            // ACT
-
-            ICrawlerService crawlerService = new GoogleCrawlerService(mockIHttpClientFactoryObject, _logger.Object, _mockConfig.Object);
-            
-            // ASSERT
-
-            Assert.ThrowsAsync&lt;HttpRequestException&gt;(async () =&gt;
-                await crawlerService.GetSearchResults(&quot;online title search&quot;), &quot;Bad Request&quot;);
-        }
-
-        [Test]
-        public void Test_Get_Search_Results_Without_Providing_Search_Terms()
-        {
-            // ARRANGE
-            var expectedSearchResultString =
-                &quot;&lt;div class=\&quot;r\&quot;&gt;&lt;a href=\&quot;http://www.infotrack.com.au\&quot;&gt;Test Dummy Data&lt;/a&gt;&lt;/div&gt;&quot;;
-
-            var httpResponseMessage = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.BadRequest,
-                Content = new StringContent(expectedSearchResultString)
-            };
-
-            var handlerMockObject = GetHandlerMock(httpResponseMessage);
-
-            var mockIHttpClientFactoryObject = GetMockIHttpClientFactory(handlerMockObject);
-
-            // ACT
-
-            ICrawlerService crawlerService = new GoogleCrawlerService(mockIHttpClientFactoryObject, _logger.Object, _mockConfig.Object);
-            
-            // ASSERT
-
-            Assert.ThrowsAsync&lt;ArgumentException&gt;(async () =&gt;
-                await crawlerService.GetSearchResults(&quot;&quot;), &quot;Search terms must be provided!&quot;);
-        }
-
-        [Test]
-        public async Task Test_Get_Search_Results_With_Max_Search_Search_Results_Config()
-        {
-            // ARRANGE
-            var expectedSearchResultString =
-                &quot;&lt;div class=\&quot;r\&quot;&gt;&lt;a href=\&quot;http://www.infotrack.com.au\&quot;&gt;Test Dummy Data&lt;/a&gt;&lt;/div&gt;&quot;;
-
-            _mockConfig.SetupGet(c =&gt; c[&quot;HttpClients:GoogleClient:MaxSearchResults&quot;])
-                .Returns(&quot;100&quot;)
-                .Verifiable();
-
-            var httpResponseMessage = new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(expectedSearchResultString)
-            };
-
-            var handlerMockObject = GetHandlerMock(httpResponseMessage);
-
-            var mockIHttpClientFactoryObject = GetMockIHttpClientFactory(handlerMockObject);
-
-            // ACT
-
-            ICrawlerService crawlerService = new GoogleCrawlerService(mockIHttpClientFactoryObject, _logger.Object, _mockConfig.Object);
-            var searchResults = await crawlerService.GetSearchResults(&quot;online title search&quot;);
-            
-            // ASSERT
-            _mockConfig.Verify(mock =&gt; mock[&quot;HttpClients:GoogleClient:MaxSearchResults&quot;], Times.Once);
-
-        }
-
-        /// &lt;summary&gt;
-        /// 
+        /// &lt;summary&gt; 
+        /// Examines the search result and retrieves the position. 
         /// &lt;/summary&gt;
-        /// &lt;param name=&quot;httpResponseMessage&quot;&gt;&lt;/param&gt;
-        /// &lt;returns&gt;&lt;/returns&gt;
-        private HttpMessageHandler GetHandlerMock(HttpResponseMessage httpResponseMessage)
+        /// &lt;param name=&quot;searchResult&quot;&gt;Results received from request to http client&lt;/param&gt;
+        /// &lt;param name=&quot;url&quot;&gt;Uri to search within the search results&lt;/param&gt;
+        /// &lt;exception cref=&quot;ArgumentException&quot;&gt;&lt;/exception&gt;
+        /// &lt;exception cref=&quot;ArgumentNullException&quot;&gt;&lt;/exception&gt;
+        public string GetUrlRanksFromSearchResults(string searchResult, Uri url)
         {
-            var handlerMock = new Mock&lt;HttpMessageHandler&gt;(MockBehavior.Strict);
-            handlerMock.Protected()
-                // Setup the PROTECTED method to mock
-                .Setup&lt;Task&lt;HttpResponseMessage&gt;&gt;(
-                    &quot;SendAsync&quot;,
-                    ItExpr.IsAny&lt;HttpRequestMessage&gt;(),
-                    ItExpr.IsAny&lt;CancellationToken&gt;()
-                )
-                // prepare the expected response of the mocked http call
-                .ReturnsAsync(httpResponseMessage)
-                .Verifiable();
+            var selectedHttpClient = _settings.Value.SelectedHttpClient;
 
-            return handlerMock.Object;
-        }
+            if (string.IsNullOrEmpty(selectedHttpClient))
+                throw new ArgumentException(&quot;Default HttpClient should be set in the config&quot;);
 
-        /// &lt;summary&gt;
-        /// 
-        /// &lt;/summary&gt;
-        /// &lt;param name=&quot;handlerMockObject&quot;&gt;&lt;/param&gt;
-        /// &lt;returns&gt;&lt;/returns&gt;
-        private IHttpClientFactory GetMockIHttpClientFactory(HttpMessageHandler handlerMockObject)
-        {
-            // use real http client with mocked handler here
-            var httpClient = new HttpClient(handlerMockObject)
+            var lookup = Configuration[$&quot;HttpClientSettings:{selectedHttpClient}:LookupRegex&quot;];
+
+            if (string.IsNullOrEmpty(lookup))
             {
-                BaseAddress = new Uri(&quot;http://test.com/&quot;),
-            };
+                _logger.LogError(&quot;Lookup regex not found in the config file&quot;);
+                throw new ArgumentException(&quot;Lookup up regex not found!&quot;);
+            }
+            
+            var rankList = new List&lt;string&gt;();
+            var ranks = new StringBuilder();
 
-            var mockHttpClientFactory = new Mock&lt;IHttpClientFactory&gt;();
+            var matches = Regex.Matches(searchResult, lookup);
+            
+            var urlToMatch = url.Host;
 
-            mockHttpClientFactory.Setup(_ =&gt; _.CreateClient(It.IsAny&lt;string&gt;())).Returns(httpClient);
+            var directoryPathConfig = Configuration[&quot;SearchDefaults:DirectoryPath&quot;];
 
-            return mockHttpClientFactory.Object;
+            if (!string.IsNullOrEmpty(directoryPathConfig))
+            {
+                urlToMatch += directoryPathConfig;
+            }
+
+            for (var i = 0; i &lt; matches.Count; i++)
+            {
+                var match = matches[i].Groups[2].Value;
+                
+                if (match.Contains(urlToMatch))
+                    rankList.Add(Convert.ToString(i + 1));
+            }
+            
+            return rankList.Count &gt; 0 ? ranks.AppendJoin(&#39;,&#39;, rankList).ToString() : &quot;0&quot;;
         }
     }
 }
-
     </pre>
     <script type="text/javascript">
-      highlightRanges([[24,9,24,10,1],[25,13,25,65,1],[26,13,26,54,1],[27,9,27,10,1],[31,9,31,10,1],[33,13,34,102,1],[36,13,40,15,1],[42,13,42,73,1],[44,13,44,93,1],[48,13,48,137,1],[50,13,50,100,1],[54,13,54,60,1],[55,13,55,86,1],[56,9,56,10,1],[60,9,60,10,1],[62,13,63,102,1],[65,13,69,15,1],[71,13,71,73,1],[73,13,73,93,1],[77,13,77,137,1],[81,13,82,17,1],[82,17,82,77,1],[82,77,82,94,1],[81,13,82,94,1],[83,9,83,10,1],[87,9,87,10,1],[89,13,90,102,1],[92,13,96,15,1],[98,13,98,73,1],[100,13,100,93,1],[104,13,104,137,1],[108,13,109,17,1],[109,17,109,58,1],[109,58,109,94,1],[108,13,109,94,1],[110,9,110,10,1],[114,9,114,10,1],[116,13,117,102,1],[119,13,121,31,1],[123,13,127,15,1],[129,13,129,73,1],[131,13,131,93,1],[135,13,135,137,1],[136,13,136,94,1],[139,13,139,103,1],[141,9,141,10,1],[149,9,149,10,1],[150,13,150,81,1],[151,13,160,31,1],[162,13,162,39,1],[163,9,163,10,1],[171,9,171,10,1],[173,13,176,15,1],[178,13,178,72,1],[180,13,180,102,1],[182,13,182,49,1],[183,9,183,10,1]]);
+      highlightRanges([[16,47,16,51,1],[19,9,19,138,1],[20,9,20,10,1],[21,13,21,43,1],[22,13,22,30,1],[23,13,23,34,1],[24,9,24,10,1],[33,9,33,10,1],[34,13,34,73,1],[36,13,36,58,1],[37,17,37,95,1],[39,13,39,96,1],[41,13,41,46,1],[42,13,42,14,1],[43,17,43,79,1],[44,17,44,75,1],[47,13,47,47,1],[48,13,48,45,1],[50,13,50,63,1],[52,13,52,39,1],[54,13,54,85,1],[56,13,56,60,1],[57,13,57,14,1],[58,17,58,51,1],[59,13,59,14,1],[61,18,61,27,1],[61,29,61,46,1],[61,48,61,51,1],[62,13,62,14,1],[63,17,63,56,1],[65,17,65,48,1],[66,21,66,59,1],[67,13,67,14,1],[69,13,69,90,1],[70,9,70,10,1]]);
     </script>
   </body>
 </html>

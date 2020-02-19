@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>D:\Git\SearchRankChecker\SearchRankChecker.Web\Startup.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.Globalization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using SearchRankChecker.Business.Interfaces;
+using SearchRankChecker.Business.Services;
+using SearchRankChecker.Domain.Models;
+
+namespace SearchRankChecker.Web
+{
+    public class Startup
+    {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddControllersWithViews();
+
+            services.Configure&lt;AppSettings&gt;(Configuration);
+
+            services.AddHttpClient(&quot;SearchClient&quot;, (sp, client) =&gt;
+            {
+                var settings = sp.GetRequiredService&lt;IOptions&lt;AppSettings&gt;&gt;().Value;
+
+                client.BaseAddress = new Uri(Configuration.GetValue&lt;string&gt;($&quot;HttpClientSettings:{settings.SelectedHttpClient}:BaseAddress&quot;));
+                client.Timeout = new TimeSpan(0, 0, 30);
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Add(&quot;User-Agent&quot;, Configuration.GetValue&lt;string&gt;(&quot;UserAgents:Chrome&quot;));
+            });
+
+            services.AddScoped&lt;ICrawlerService, CrawlerService&gt;();
+            services.AddScoped&lt;IRankCalculator, RankCalculatorService&gt;();
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler(&quot;/Home/Error&quot;);
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
+
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture(new CultureInfo(&quot;en-AU&quot;))
+            });
+
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =&gt;
+            {
+                endpoints.MapControllerRoute(
+                    name: &quot;default&quot;,
+                    pattern: &quot;{controller=Home}/{action=Index}/{id?}&quot;);
+            });
+        }
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[18,9,18,53,0],[19,9,19,10,0],[20,13,20,43,0],[21,9,21,10,0],[23,47,23,51,0],[27,9,27,10,0],[28,13,28,48,0],[30,13,30,60,0],[32,13,33,13,0],[33,13,33,14,0],[33,14,34,17,0],[34,17,34,85,0],[34,85,36,17,0],[36,17,36,143,0],[36,143,37,17,0],[37,17,37,57,0],[37,57,38,17,0],[38,17,38,54,0],[38,54,39,17,0],[39,17,39,117,0],[39,117,40,13,0],[40,13,40,14,0],[40,14,40,16,0],[32,13,40,16,0],[42,13,42,67,0],[43,13,43,74,0],[44,9,44,10,0],[48,9,48,10,0],[49,13,49,37,0],[50,13,50,14,0],[51,17,51,49,0],[52,13,52,14,0],[54,13,54,14,0],[55,17,55,56,0],[57,17,57,31,0],[58,13,58,14,0],[60,13,63,16,0],[65,13,65,39,0],[66,13,66,34,0],[68,13,68,30,0],[70,13,70,36,0],[72,13,73,13,0],[73,13,73,14,0],[73,14,74,17,0],[74,17,76,72,0],[76,72,77,13,0],[77,13,77,14,0],[77,14,77,16,0],[72,13,77,16,0],[78,9,78,10,0]]);
+    </script>
+  </body>
+</html>

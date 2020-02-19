@@ -10,5 +10,8 @@ namespace SearchRankChecker.Web.ViewModels
         [BindProperty]
         [Display(Name = "Search Region")]
         public string SearchRegion { get; set; }
+
+        [Display(Name = "Search Engine Name")]
+        public string SearchEngineName { get; set; }
     }
 }

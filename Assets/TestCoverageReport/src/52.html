@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>D:\Git\SearchRankChecker\SearchRankChecker.Tests\BingCrawlerServiceTests.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using Moq.Protected;
+using NUnit.Framework;
+using SearchRankChecker.Business.Interfaces;
+using SearchRankChecker.Business.Services;
+using SearchRankChecker.Domain.Models;
+
+namespace SearchRankChecker.Tests
+{
+    [TestFixture]
+    public class BingCrawlerServiceTests
+    {
+        private Mock&lt;ILogger&lt;CrawlerService&gt;&gt; _logger;
+        private Mock&lt;IConfiguration&gt; _mockConfig;
+        private Mock&lt;IOptionsSnapshot&lt;AppSettings&gt;&gt; _mockOptions;
+        private AppSettings _appSettings;
+
+        [SetUp]
+        public void Setup()
+        {
+            _logger = new Mock&lt;ILogger&lt;CrawlerService&gt;&gt;();
+            _mockConfig = new Mock&lt;IConfiguration&gt;();
+            _appSettings = new AppSettings {SelectedHttpClient = &quot;BingClient&quot;};
+            _mockOptions = new Mock&lt;IOptionsSnapshot&lt;AppSettings&gt;&gt;();
+
+            _mockOptions.Setup(_ =&gt; _.Value).Returns(_appSettings);
+        }
+
+        [Test]
+        public async Task Test_Get_Search_Results_Success()
+        {
+            // ARRANGE
+            var expectedSearchResultString =
+                &quot;&lt;li class=\&quot;b_algo\&quot;&gt;&lt;h2&gt;&lt;a href=\&quot;http://www.infotrack.com.au\&quot;&gt;&lt;/a&gt;&lt;/h2&gt;&quot;;
+
+            var httpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(expectedSearchResultString)
+            };
+
+            var handlerMockObject = GetHandlerMock(httpResponseMessage);
+
+            var mockIHttpClientFactoryObject = GetMockIHttpClientFactory(handlerMockObject);
+
+            // ACT
+
+            ICrawlerService crawlerService = new CrawlerService(mockIHttpClientFactoryObject, _logger.Object, _mockConfig.Object, _mockOptions.Object);
+            
+            var actualSearchResults = await crawlerService.GetSearchResults(&quot;online title search&quot;);
+
+            // ASSERT
+
+            Assert.That(actualSearchResults, Is.Not.Empty);
+            Assert.That(actualSearchResults, Is.EqualTo(expectedSearchResultString));
+        }
+
+        [Test]
+        public void Test_Get_Search_Results_Not_Success_Status_Code()
+        {
+            // ARRANGE
+            var expectedSearchResultString =
+                &quot;&lt;li class=\&quot;b_algo\&quot;&gt;&lt;h2&gt;&lt;a href=\&quot;http://www.infotrack.com.au\&quot;&gt;&lt;/a&gt;&lt;/h2&gt;&quot;;
+
+            var httpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Content = new StringContent(expectedSearchResultString)
+            };
+
+            var handlerMockObject = GetHandlerMock(httpResponseMessage);
+
+            var mockIHttpClientFactoryObject = GetMockIHttpClientFactory(handlerMockObject);
+
+            // ACT
+
+            ICrawlerService crawlerService = new CrawlerService(mockIHttpClientFactoryObject, _logger.Object, _mockConfig.Object, _mockOptions.Object);
+            
+            // ASSERT
+
+            Assert.ThrowsAsync&lt;HttpRequestException&gt;(async () =&gt;
+                await crawlerService.GetSearchResults(&quot;online title search&quot;), &quot;Bad Request&quot;);
+        }
+
+        [Test]
+        public void Test_Get_Search_Results_Without_Providing_Search_Terms()
+        {
+            // ARRANGE
+            var expectedSearchResultString =
+                &quot;&lt;li class=\&quot;b_algo\&quot;&gt;&lt;h2&gt;&lt;a href=\&quot;http://www.infotrack.com.au\&quot;&gt;&lt;/a&gt;&lt;/h2&gt;&quot;;
+
+            var httpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Content = new StringContent(expectedSearchResultString)
+            };
+
+            var handlerMockObject = GetHandlerMock(httpResponseMessage);
+
+            var mockIHttpClientFactoryObject = GetMockIHttpClientFactory(handlerMockObject);
+
+            // ACT
+
+            ICrawlerService crawlerService = new CrawlerService(mockIHttpClientFactoryObject, _logger.Object, _mockConfig.Object, _mockOptions.Object);
+            
+            // ASSERT
+
+            Assert.ThrowsAsync&lt;ArgumentException&gt;(async () =&gt;
+                await crawlerService.GetSearchResults(&quot;&quot;), &quot;Search terms must be provided!&quot;);
+        }
+
+        [Test]
+        public void Test_Get_Search_Results_Without_Selected_Client_Setting()
+        {
+            // ARRANGE
+            _appSettings = new AppSettings {SelectedHttpClient = &quot;&quot;};
+
+            _mockOptions.Setup(_ =&gt; _.Value).Returns(_appSettings);
+            
+            var expectedSearchResultString =
+                &quot;&lt;li class=\&quot;b_algo\&quot;&gt;&lt;h2&gt;&lt;a href=\&quot;http://www.infotrack.com.au\&quot;&gt;&lt;/a&gt;&lt;/h2&gt;&quot;;
+
+            var httpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(expectedSearchResultString)
+            };
+
+            var handlerMockObject = GetHandlerMock(httpResponseMessage);
+
+            var mockIHttpClientFactoryObject = GetMockIHttpClientFactory(handlerMockObject);
+
+            // ACT
+
+            ICrawlerService crawlerService = new CrawlerService(mockIHttpClientFactoryObject, _logger.Object, _mockConfig.Object, _mockOptions.Object);
+            
+            // ASSERT
+
+            Assert.ThrowsAsync&lt;ArgumentException&gt;(async () =&gt;
+                await crawlerService.GetSearchResults(&quot;online title search&quot;), &quot;Default HttpClient should be set in the config&quot;);
+        }
+
+        [Test]
+        public async Task Test_Get_Search_Results_With_Max_Search_Search_Results_Config()
+        {
+            // ARRANGE
+            var expectedSearchResultString =
+                &quot;&lt;li class=\&quot;b_algo\&quot;&gt;&lt;h2&gt;&lt;a href=\&quot;http://www.infotrack.com.au\&quot;&gt;&lt;/a&gt;&lt;/h2&gt;&quot;;
+
+            _mockConfig.SetupGet(c =&gt; c[$&quot;HttpClientSettings:{_appSettings.SelectedHttpClient}:MaxSearchResults&quot;])
+                .Returns(&quot;100&quot;)
+                .Verifiable();
+
+            var httpResponseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(expectedSearchResultString)
+            };
+
+            var handlerMockObject = GetHandlerMock(httpResponseMessage);
+
+            var mockIHttpClientFactoryObject = GetMockIHttpClientFactory(handlerMockObject);
+
+            // ACT
+
+            ICrawlerService crawlerService = new CrawlerService(mockIHttpClientFactoryObject, _logger.Object, _mockConfig.Object, _mockOptions.Object);
+            var searchResults = await crawlerService.GetSearchResults(&quot;online title search&quot;);
+            
+            // ASSERT
+            _mockConfig.Verify(mock =&gt; mock[$&quot;HttpClientSettings:{_appSettings.SelectedHttpClient}:MaxSearchResults&quot;], Times.Once);
+        }
+
+        /// &lt;summary&gt;
+        /// 
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;httpResponseMessage&quot;&gt;&lt;/param&gt;
+        /// &lt;returns&gt;&lt;/returns&gt;
+        private HttpMessageHandler GetHandlerMock(HttpResponseMessage httpResponseMessage)
+        {
+            var handlerMock = new Mock&lt;HttpMessageHandler&gt;(MockBehavior.Strict);
+            handlerMock.Protected()
+                // Setup the PROTECTED method to mock
+                .Setup&lt;Task&lt;HttpResponseMessage&gt;&gt;(
+                    &quot;SendAsync&quot;,
+                    ItExpr.IsAny&lt;HttpRequestMessage&gt;(),
+                    ItExpr.IsAny&lt;CancellationToken&gt;()
+                )
+                // prepare the expected response of the mocked http call
+                .ReturnsAsync(httpResponseMessage)
+                .Verifiable();
+
+            return handlerMock.Object;
+        }
+
+        /// &lt;summary&gt;
+        /// 
+        /// &lt;/summary&gt;
+        /// &lt;param name=&quot;handlerMockObject&quot;&gt;&lt;/param&gt;
+        /// &lt;returns&gt;&lt;/returns&gt;
+        private IHttpClientFactory GetMockIHttpClientFactory(HttpMessageHandler handlerMockObject)
+        {
+            // use real http client with mocked handler here
+            var httpClient = new HttpClient(handlerMockObject)
+            {
+                BaseAddress = new Uri(&quot;http://test.com/&quot;),
+            };
+
+            var mockHttpClientFactory = new Mock&lt;IHttpClientFactory&gt;();
+
+            mockHttpClientFactory.Setup(_ =&gt; _.CreateClient(It.IsAny&lt;string&gt;())).Returns(httpClient);
+
+            return mockHttpClientFactory.Object;
+        }
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[28,9,28,10,1],[29,13,29,59,1],[30,13,30,54,1],[31,13,31,80,1],[32,13,32,70,1],[34,13,34,68,1],[35,9,35,10,1],[39,9,39,10,1],[41,13,42,94,1],[44,13,48,15,1],[50,13,50,73,1],[52,13,52,93,1],[56,13,56,152,1],[58,13,58,100,1],[62,13,62,60,1],[63,13,63,86,1],[64,9,64,10,1],[68,9,68,10,1],[70,13,71,94,1],[73,13,77,15,1],[79,13,79,73,1],[81,13,81,93,1],[85,13,85,152,1],[89,13,90,17,1],[90,17,90,77,1],[90,77,90,94,1],[89,13,90,94,1],[91,9,91,10,1],[95,9,95,10,1],[97,13,98,94,1],[100,13,104,15,1],[106,13,106,73,1],[108,13,108,93,1],[112,13,112,152,1],[116,13,117,17,1],[117,17,117,58,1],[117,58,117,94,1],[116,13,117,94,1],[118,9,118,10,1],[122,9,122,10,1],[124,13,124,70,1],[126,13,126,68,1],[128,13,129,94,1],[131,13,135,15,1],[137,13,137,73,1],[139,13,139,93,1],[143,13,143,152,1],[147,13,148,17,1],[148,17,148,77,1],[148,77,148,129,1],[147,13,148,129,1],[149,9,149,10,1],[153,9,153,10,1],[155,13,156,94,1],[158,13,160,31,1],[162,13,166,15,1],[168,13,168,73,1],[170,13,170,93,1],[174,13,174,152,1],[175,13,175,94,1],[178,13,178,132,1],[179,9,179,10,1],[187,9,187,10,1],[188,13,188,81,1],[189,13,198,31,1],[200,13,200,39,1],[201,9,201,10,1],[209,9,209,10,1],[211,13,214,15,1],[216,13,216,72,1],[218,13,218,102,1],[220,13,220,49,1],[221,9,221,10,1]]);
+    </script>
+  </body>
+</html>

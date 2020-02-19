@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>D:\Git\SearchRankChecker\SearchRankChecker.Web\ViewModels\SearchViewModel.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
+
+namespace SearchRankChecker.Web.ViewModels
+{
+    public class SearchViewModel
+    {
+        public string RankString { get; set; }
+        
+        [BindProperty]
+        [Display(Name = &quot;Search Region&quot;)]
+        public string SearchRegion { get; set; }
+
+        [Display(Name = &quot;Search Engine Name&quot;)]
+        public string SearchEngineName { get; set; }
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[8,36,8,40,0],[8,41,8,45,1],[12,38,12,42,1],[12,43,12,47,1],[15,42,15,46,1],[15,47,15,51,1]]);
+    </script>
+  </body>
+</html>

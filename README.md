@@ -67,27 +67,31 @@ The region gets changed successfully but still no luck with the google search. W
 
 We also tried sending in Accept-Language header with the request but again no luck.
 
-So the only thing works is the word **"australia"**.
+We tried another option, which was a brute force method you can say. And that was changing the Region and Language of our Windows 10 machine. Luckily it works. But we noted that the order of the returned results are different that what we get via the browser so we get incorrect rank basically.
 
-### Different Search Results from Browser and Code
-
-Searching for same URL and Keywords, we get only one result in the top 100 from the browser. Whereas, if we search through our code, we get two results. On debugging we found out it gets different directories when searched through our application code:
-
-![Coverage Report](./Assets/SearchResultsThroughCode.png "Coverage Report")
+So the only thing works is the word **"australia"**. We can also match the result from the browser results.
 
 ## Test Coverage
 
 ![Coverage Report](./Assets/CoverageReport.png "Coverage Report")
 
-Coverage can definitly be improved if we have more time.
+Current code coverage is **90%** which is good we thing but can definitly be improved.
 
 ## Configuration Options
 
-### Multiple Client Support for future versions
+### Switching Search Client
 
-#### HttpClients
+Multiple clients can be added via appSettings.json's **HttpClients** config entry. Currently, we support Google Search and Bing. Search client can be set via **SelectedHttpClient** config. (See screenshots below):
 
-Multiple clients can be added via appSettings.json's **HttpClients** config entry. We only have Google Client as of now. (Note: Code will also require changes like new implementation of **ICrawlerService**)
+#### Google Search
+
+![Google Search](./Assets/SwitchingClients_Google.png "Google Search")
+
+#### Bing Search
+
+![Bing Search](./Assets/SwitchingClients_Bing.png "Bing Search")
+
+Note: Application restart is necessary while running in debug mode through Visual Studio but might not be necessary if deployed on IIS.
 
 #### LookupRegex
 

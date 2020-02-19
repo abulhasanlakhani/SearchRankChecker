@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <title>D:\Git\SearchRankChecker\SearchRankChecker.Business\Services\GoogleCrawlerService.cs</title>
+    <title>D:\Git\SearchRankChecker\SearchRankChecker.Business\Services\CrawlerService.cs</title>
     <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
     <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
   </head>
@@ -15,22 +15,25 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using SearchRankChecker.Business.Interfaces;
-using SearchRankChecker.Domain.Enums;
+using SearchRankChecker.Domain.Models;
 
 namespace SearchRankChecker.Business.Services
 {
-    public class GoogleCrawlerService : ICrawlerService
+    public class CrawlerService : ICrawlerService
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger&lt;GoogleCrawlerService&gt; _logger;
+        private readonly ILogger&lt;CrawlerService&gt; _logger;
+        private readonly IOptions&lt;AppSettings&gt; _settings;
         public IConfiguration Configuration { get; }
 
-        public GoogleCrawlerService(IHttpClientFactory httpClientFactory, ILogger&lt;GoogleCrawlerService&gt; logger, IConfiguration configuration)
+        public CrawlerService(IHttpClientFactory httpClientFactory, ILogger&lt;CrawlerService&gt; logger, IConfiguration configuration, IOptions&lt;AppSettings&gt; settings)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
+            _settings = settings;
             Configuration = configuration;
         }
 
@@ -48,7 +51,7 @@ namespace SearchRankChecker.Business.Services
                 throw new ArgumentException(&quot;Search terms must be provided!&quot;);
 
             var query = BuildCrawlQuery(searchTerms);
-            var httpClient = _httpClientFactory.CreateClient(nameof(HttpClientsEnum.GoogleClient));
+            var httpClient = _httpClientFactory.CreateClient(&quot;SearchClient&quot;);
 
             var request = new HttpRequestMessage(HttpMethod.Get, query);
 
@@ -76,7 +79,10 @@ namespace SearchRankChecker.Business.Services
             var encodedSearchTerm = HttpUtility.UrlEncode(searchTerms);
 
             var searchQuery = $&quot;search?q={encodedSearchTerm}&quot;;
-            var maxSearchResultsConfig = Configuration[&quot;HttpClients:GoogleClient:MaxSearchResults&quot;];
+            
+            var selectedHttpClient = GetSelectedHttpClient();
+            
+            var maxSearchResultsConfig = Configuration[$&quot;HttpClientSettings:{selectedHttpClient}:MaxSearchResults&quot;];
 
             if (!string.IsNullOrEmpty(maxSearchResultsConfig))
             {
@@ -85,12 +91,22 @@ namespace SearchRankChecker.Business.Services
             
             return searchQuery;
         }
+
+        private string GetSelectedHttpClient()
+        {
+            var selectedHttpClient = _settings.Value.SelectedHttpClient;
+
+            if (string.IsNullOrEmpty(selectedHttpClient))
+                throw new ArgumentException(&quot;Default HttpClient should be set in the config&quot;);
+
+            return selectedHttpClient;
+        }
     }
 }
 
     </pre>
     <script type="text/javascript">
-      highlightRanges([[18,47,18,51,1],[20,9,20,142,1],[21,9,21,10,1],[22,13,22,52,1],[23,13,23,30,1],[24,13,24,43,1],[25,9,25,10,1],[36,9,36,10,1],[37,13,37,51,1],[38,17,38,79,1],[40,13,40,54,1],[41,13,41,100,1],[43,13,43,73,1],[46,13,46,14,1],[47,17,47,74,1],[48,17,48,52,1],[50,17,50,67,1],[52,33,52,110,1],[53,13,53,14,1],[54,17,54,93,1],[55,17,55,23,1],[57,9,57,10,1],[65,9,65,10,1],[66,13,66,72,1],[68,13,68,63,1],[69,13,69,101,1],[71,13,71,63,1],[72,13,72,14,1],[73,17,73,65,1],[74,13,74,14,1],[76,13,76,32,1],[77,9,77,10,1]]);
+      highlightRanges([[20,47,20,51,1],[22,9,22,162,1],[23,9,23,10,1],[24,13,24,52,1],[25,13,25,30,1],[26,13,26,34,1],[27,13,27,43,1],[28,9,28,10,1],[39,9,39,10,1],[40,13,40,51,1],[41,17,41,79,1],[43,13,43,54,1],[44,13,44,78,1],[46,13,46,73,1],[49,13,49,14,1],[50,17,50,74,1],[51,17,51,52,1],[53,17,53,67,1],[55,33,55,110,1],[56,13,56,14,1],[57,17,57,93,1],[58,17,58,23,1],[60,9,60,10,1],[68,9,68,10,1],[69,13,69,72,1],[71,13,71,63,1],[73,13,73,62,1],[75,13,75,117,1],[77,13,77,63,1],[78,13,78,14,1],[79,17,79,65,1],[80,13,80,14,1],[82,13,82,32,1],[83,9,83,10,1],[86,9,86,10,1],[87,13,87,73,1],[89,13,89,58,1],[90,17,90,95,1],[92,13,92,39,1],[93,9,93,10,1]]);
     </script>
   </body>
 </html>
