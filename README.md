@@ -1,7 +1,7 @@
 # Search Rank Checker
 
 [![Build Status](https://travis-ci.org/abulhasanlakhani/SearchRankChecker.svg?branch=master)](https://travis-ci.org/abulhasanlakhani/SearchRankChecker)
-![GitHub](https://img.shields.io/github/license/abulhasanlakhani/SearchRankChecker.svg)
+[![Coverage Status](https://coveralls.io/repos/github/abulhasanlakhani/SearchRankChecker/badge.svg?branch=master)](https://coveralls.io/github/abulhasanlakhani/SearchRankChecker?branch=master)
 
 ## Description
 
