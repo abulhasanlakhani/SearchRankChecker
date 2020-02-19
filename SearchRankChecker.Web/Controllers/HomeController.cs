@@ -83,6 +83,8 @@ namespace SearchRankChecker.Web.Controllers
 
             CultureInfo.DefaultThreadCurrentCulture = newCulture;
             CultureInfo.DefaultThreadCurrentUICulture = newCulture;
+            CultureInfo.CurrentCulture = newCulture;
+            CultureInfo.CurrentUICulture = newCulture;
 
             return RedirectToAction(nameof(Index), new SearchViewModel
             {
