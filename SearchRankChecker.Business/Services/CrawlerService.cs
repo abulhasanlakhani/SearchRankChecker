@@ -5,22 +5,25 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using SearchRankChecker.Business.Interfaces;
-using SearchRankChecker.Domain.Enums;
+using SearchRankChecker.Domain.Models;
 
 namespace SearchRankChecker.Business.Services
 {
-    public class GoogleCrawlerService : ICrawlerService
+    public class CrawlerService : ICrawlerService
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<GoogleCrawlerService> _logger;
+        private readonly ILogger<CrawlerService> _logger;
+        private readonly IOptions<AppSettings> _settings;
         public IConfiguration Configuration { get; }
 
-        public GoogleCrawlerService(IHttpClientFactory httpClientFactory, ILogger<GoogleCrawlerService> logger, IConfiguration configuration)
+        public CrawlerService(IHttpClientFactory httpClientFactory, ILogger<CrawlerService> logger, IConfiguration configuration, IOptions<AppSettings> settings)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
+            _settings = settings;
             Configuration = configuration;
         }
 
@@ -38,7 +41,7 @@ namespace SearchRankChecker.Business.Services
                 throw new ArgumentException("Search terms must be provided!");
 
             var query = BuildCrawlQuery(searchTerms);
-            var httpClient = _httpClientFactory.CreateClient(nameof(HttpClientsEnum.GoogleClient));
+            var httpClient = _httpClientFactory.CreateClient("SearchClient");
 
             var request = new HttpRequestMessage(HttpMethod.Get, query);
 
@@ -66,7 +69,10 @@ namespace SearchRankChecker.Business.Services
             var encodedSearchTerm = HttpUtility.UrlEncode(searchTerms);
 
             var searchQuery = $"search?q={encodedSearchTerm}";
-            var maxSearchResultsConfig = Configuration["HttpClients:GoogleClient:MaxSearchResults"];
+            
+            var selectedHttpClient = GetSelectedHttpClient();
+            
+            var maxSearchResultsConfig = Configuration[$"HttpClientSettings:{selectedHttpClient}:MaxSearchResults"];
 
             if (!string.IsNullOrEmpty(maxSearchResultsConfig))
             {
@@ -74,6 +80,16 @@ namespace SearchRankChecker.Business.Services
             }
             
             return searchQuery;
+        }
+
+        private string GetSelectedHttpClient()
+        {
+            var selectedHttpClient = _settings.Value.SelectedHttpClient;
+
+            if (string.IsNullOrEmpty(selectedHttpClient))
+                throw new ArgumentException("Default HttpClient should be set in the config");
+
+            return selectedHttpClient;
         }
     }
 }

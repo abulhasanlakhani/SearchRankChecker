@@ -6,9 +6,10 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using SearchRankChecker.Business.Interfaces;
 using SearchRankChecker.Business.Services;
-using SearchRankChecker.Domain.Enums;
+using SearchRankChecker.Domain.Models;
 
 namespace SearchRankChecker.Web
 {
@@ -26,16 +27,20 @@ namespace SearchRankChecker.Web
         {
             services.AddControllersWithViews();
 
-            services.AddHttpClient(nameof(HttpClientsEnum.GoogleClient), client =>
+            services.Configure<AppSettings>(Configuration);
+
+            services.AddHttpClient("SearchClient", (sp, client) =>
             {
-                client.BaseAddress = new Uri(Configuration.GetValue<string>("HttpClients:GoogleClient:BaseAddress"));
+                var settings = sp.GetRequiredService<IOptions<AppSettings>>().Value;
+
+                client.BaseAddress = new Uri(Configuration.GetValue<string>($"HttpClientSettings:{settings.SelectedHttpClient}:BaseAddress"));
                 client.Timeout = new TimeSpan(0, 0, 30);
                 client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Add("User-Agent", Configuration.GetValue<string>("UserAgents:Chrome"));
             });
 
-            services.AddScoped<ICrawlerService, GoogleCrawlerService>();
-            services.AddScoped<IRankCalculator, GoogleRankCalculator>();
+            services.AddScoped<ICrawlerService, CrawlerService>();
+            services.AddScoped<IRankCalculator, RankCalculatorService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

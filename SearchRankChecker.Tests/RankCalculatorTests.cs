@@ -1,28 +1,35 @@
 ﻿using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using SearchRankChecker.Business.Interfaces;
 using SearchRankChecker.Business.Services;
+using SearchRankChecker.Domain.Models;
 
 namespace SearchRankChecker.Tests
 {
     [TestFixture]
-    public class GoogleRankCalculatorTests
+    public class RankCalculatorTests
     {
-        private const string LookupRegexConfig = "HttpClients:GoogleClient:LookupRegex";
+        private const string LookupRegexConfig = "HttpClientSettings:GoogleClient:LookupRegex";
         private Mock<IConfiguration> _mockConfig;
         private IRankCalculator _googleRankCalculatorService;
-        private Mock<ILogger<GoogleRankCalculator>> _logger;
+        private Mock<ILogger<RankCalculatorService>> _logger;
+        private Mock<IOptionsSnapshot<AppSettings>> _mockOptions;
+        private AppSettings _appSettings;
 
         [SetUp]
         public void Setup()
         {
             _mockConfig = new Mock<IConfiguration>();
-            _logger = new Mock<ILogger<GoogleRankCalculator>>();
+            _logger = new Mock<ILogger<RankCalculatorService>>();
+            _mockOptions = new Mock<IOptionsSnapshot<AppSettings>>();
+            _appSettings = new AppSettings {SelectedHttpClient = "GoogleClient"};
+            _mockOptions.Setup(_ => _.Value).Returns(_appSettings);
 
-            _googleRankCalculatorService = new GoogleRankCalculator(_mockConfig.Object, _logger.Object);
+            _googleRankCalculatorService = new RankCalculatorService(_mockConfig.Object, _logger.Object, _mockOptions.Object);
         }
 
         [Test]
@@ -84,6 +91,24 @@ namespace SearchRankChecker.Tests
                 .GetUrlRanksFromSearchResults(searchResults, new Uri("http://www.infotrack.com.au")));
 
             Assert.That(lookupException.Message, Is.EqualTo("Lookup up regex not found!"));
+        }
+
+        [Test]
+        public void Argument_Exception_Should_Be_Thrown_Without_Selected_Client_Setting()
+        {
+            _appSettings = new AppSettings {SelectedHttpClient = ""};
+            _mockOptions.Setup(_ => _.Value).Returns(_appSettings);
+
+            _mockConfig.SetupGet(c => c[LookupRegexConfig])
+                .Returns("(<div class=\"r\"><a href=\"(.*?)\">)");
+
+            var searchResults =
+                "<div class=\"r\"><a href=\"http://www.xyz.com.au\">Test Dummy Data</a></div>";
+            
+            var lookupException = Assert.Throws<ArgumentException>(() => _googleRankCalculatorService
+                .GetUrlRanksFromSearchResults(searchResults, new Uri("http://www.infotrack.com.au")));
+
+            Assert.That(lookupException.Message, Is.EqualTo("Default HttpClient should be set in the config"));
         }
 
         [Test]

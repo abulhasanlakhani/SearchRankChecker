@@ -16,7 +16,7 @@ using SearchRankChecker.Domain.Models;
 namespace SearchRankChecker.Tests
 {
     [TestFixture]
-    public class GoogleCrawlerServiceTests
+    public class BingCrawlerServiceTests
     {
         private Mock<ILogger<CrawlerService>> _logger;
         private Mock<IConfiguration> _mockConfig;
@@ -28,8 +28,8 @@ namespace SearchRankChecker.Tests
         {
             _logger = new Mock<ILogger<CrawlerService>>();
             _mockConfig = new Mock<IConfiguration>();
+            _appSettings = new AppSettings {SelectedHttpClient = "BingClient"};
             _mockOptions = new Mock<IOptionsSnapshot<AppSettings>>();
-            _appSettings = new AppSettings {SelectedHttpClient = "GoogleClient"};
 
             _mockOptions.Setup(_ => _.Value).Returns(_appSettings);
         }
@@ -39,7 +39,7 @@ namespace SearchRankChecker.Tests
         {
             // ARRANGE
             var expectedSearchResultString =
-                "<div class=\"r\"><a href=\"http://www.infotrack.com.au\">Test Dummy Data</a></div>";
+                "<li class=\"b_algo\"><h2><a href=\"http://www.infotrack.com.au\"></a></h2>";
 
             var httpResponseMessage = new HttpResponseMessage
             {
@@ -68,7 +68,7 @@ namespace SearchRankChecker.Tests
         {
             // ARRANGE
             var expectedSearchResultString =
-                "<div class=\"r\"><a href=\"http://www.infotrack.com.au\">Test Dummy Data</a></div>";
+                "<li class=\"b_algo\"><h2><a href=\"http://www.infotrack.com.au\"></a></h2>";
 
             var httpResponseMessage = new HttpResponseMessage
             {
@@ -95,7 +95,7 @@ namespace SearchRankChecker.Tests
         {
             // ARRANGE
             var expectedSearchResultString =
-                "<div class=\"r\"><a href=\"http://www.infotrack.com.au\">Test Dummy Data</a></div>";
+                "<li class=\"b_algo\"><h2><a href=\"http://www.infotrack.com.au\"></a></h2>";
 
             var httpResponseMessage = new HttpResponseMessage
             {
@@ -126,7 +126,7 @@ namespace SearchRankChecker.Tests
             _mockOptions.Setup(_ => _.Value).Returns(_appSettings);
             
             var expectedSearchResultString =
-                "<div class=\"r\"><a href=\"http://www.infotrack.com.au\">Test Dummy Data</a></div>";
+                "<li class=\"b_algo\"><h2><a href=\"http://www.infotrack.com.au\"></a></h2>";
 
             var httpResponseMessage = new HttpResponseMessage
             {
@@ -153,7 +153,7 @@ namespace SearchRankChecker.Tests
         {
             // ARRANGE
             var expectedSearchResultString =
-                "<div class=\"r\"><a href=\"http://www.infotrack.com.au\">Test Dummy Data</a></div>";
+                "<li class=\"b_algo\"><h2><a href=\"http://www.infotrack.com.au\"></a></h2>";
 
             _mockConfig.SetupGet(c => c[$"HttpClientSettings:{_appSettings.SelectedHttpClient}:MaxSearchResults"])
                 .Returns("100")
@@ -177,8 +177,6 @@ namespace SearchRankChecker.Tests
             // ASSERT
             _mockConfig.Verify(mock => mock[$"HttpClientSettings:{_appSettings.SelectedHttpClient}:MaxSearchResults"], Times.Once);
         }
-
-
 
         /// <summary>
         /// 

@@ -4,19 +4,23 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SearchRankChecker.Business.Interfaces;
+using SearchRankChecker.Domain.Models;
 
 namespace SearchRankChecker.Business.Services
 {
-    public class GoogleRankCalculator : IRankCalculator
+    public class RankCalculatorService : IRankCalculator
     {
-        private readonly ILogger<GoogleRankCalculator> _logger;
+        private readonly ILogger<RankCalculatorService> _logger;
         public IConfiguration Configuration { get; }
+        private readonly IOptions<AppSettings> _settings;
 
-        public GoogleRankCalculator(IConfiguration configuration, ILogger<GoogleRankCalculator> logger)
+        public RankCalculatorService(IConfiguration configuration, ILogger<RankCalculatorService> logger, IOptions<AppSettings> settings)
         {
             Configuration = configuration;
             _logger = logger;
+            _settings = settings;
         }
         /// <summary> 
         /// Examines the search result and retrieves the position. 
@@ -27,7 +31,12 @@ namespace SearchRankChecker.Business.Services
         /// <exception cref="ArgumentNullException"></exception>
         public string GetUrlRanksFromSearchResults(string searchResult, Uri url)
         {
-            var lookup = Configuration["HttpClients:GoogleClient:LookupRegex"];
+            var selectedHttpClient = _settings.Value.SelectedHttpClient;
+
+            if (string.IsNullOrEmpty(selectedHttpClient))
+                throw new ArgumentException("Default HttpClient should be set in the config");
+
+            var lookup = Configuration[$"HttpClientSettings:{selectedHttpClient}:LookupRegex"];
 
             if (string.IsNullOrEmpty(lookup))
             {

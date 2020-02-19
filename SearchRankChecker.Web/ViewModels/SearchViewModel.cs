@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SearchRankChecker.Web.ViewModels
 {
@@ -7,6 +8,7 @@ namespace SearchRankChecker.Web.ViewModels
         public string RankString { get; set; }
         
         [BindProperty]
+        [Display(Name = "Search Region")]
         public string SearchRegion { get; set; }
     }
 }
