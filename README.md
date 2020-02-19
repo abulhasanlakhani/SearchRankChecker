@@ -1,5 +1,8 @@
 # Search Rank Checker
 
+[![Build Status](https://travis-ci.org/abulhasanlakhani/SearchRankChecker.svg?branch=master)](https://travis-ci.org/abulhasanlakhani/SearchRankChecker)
+![GitHub](https://img.shields.io/github/license/abulhasanlakhani/SearchRankChecker.svg)
+
 ## Description
 
 Search Rank Checker is an Asp.Net Core MVC based application designed to do google search for checking the rank of any given url for the search keywords provided.
