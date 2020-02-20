@@ -28,27 +28,18 @@ namespace SearchRankChecker.Web.Controllers
 
         public IActionResult Index(SearchViewModel searchViewModel)
         {
-            // Get current culture
-            // Doing this here in an attempt to force google search to return AU specific results - Doesn't work
-            searchViewModel.SearchRegion = string.IsNullOrEmpty(searchViewModel.SearchRegion) ? 
-                Thread.CurrentThread.CurrentCulture.Name : 
-                searchViewModel.SearchRegion;
-            
-            var selectedClient = _configuration["SelectedHttpClient"];
-
-            if (!string.IsNullOrEmpty(selectedClient))
-                searchViewModel.SearchEngineName = _configuration[$"HttpClientSettings:{selectedClient}:SearchEngineName"];
-            
+            SetupSearchViewModel(searchViewModel);
+                        
             return View(searchViewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Search(Search searchModel)
+        public async Task<IActionResult> Index(Search searchModel, SearchViewModel searchViewModel)
         {
             if (!ModelState.IsValid)
             {
                 _logger.LogError("Input data not provided or invalid!");
-                return View(nameof(Index), new SearchViewModel());
+                return View(nameof(Index), SetupSearchViewModel(searchViewModel));
             }
 
             if (!Uri.TryCreate(searchModel.UrlToSearch, UriKind.Absolute, out var urlToSearch))
@@ -59,14 +50,14 @@ namespace SearchRankChecker.Web.Controllers
 
                 _logger.LogError(errorMessage);
 
-                return View(nameof(Index));
+                return View(nameof(Index), SetupSearchViewModel(searchViewModel));
             }
 
             try
             {
                 var searchResults = await _crawlerService.GetSearchResults(searchModel.SearchKeywords);
                 
-                return _GetSearchRank(searchResults, urlToSearch);
+                return _GetSearchRank(searchResults, urlToSearch, searchViewModel);
             }
             catch (Exception ex)
             {
@@ -103,16 +94,13 @@ namespace SearchRankChecker.Web.Controllers
             return View("Error");
         }
 
-        private IActionResult _GetSearchRank(string searchResults, Uri urlToSearch)
+        private IActionResult _GetSearchRank(string searchResults, Uri urlToSearch, SearchViewModel searchViewModel)
         {
             try
             {
-                var searchRankViewModel = new SearchViewModel
-                {
-                    RankString = _rankCalculator.GetUrlRanksFromSearchResults(searchResults, urlToSearch)
-                };
+                searchViewModel.RankString = _rankCalculator.GetUrlRanksFromSearchResults(searchResults, urlToSearch);
 
-                return RedirectToAction(nameof(Index), searchRankViewModel);
+                return View(nameof(Index), SetupSearchViewModel(searchViewModel));
             }
             catch (ArgumentException ex)
             {
@@ -120,6 +108,22 @@ namespace SearchRankChecker.Web.Controllers
 
                 return RedirectToAction("Error");
             }
+        }
+
+        private SearchViewModel SetupSearchViewModel(SearchViewModel searchViewModel)
+        {
+            // Get current culture
+            // Doing this here in an attempt to force google search to return AU specific results - Doesn't work
+            searchViewModel.SearchRegion = string.IsNullOrEmpty(searchViewModel.SearchRegion) ?
+                Thread.CurrentThread.CurrentCulture.Name :
+                searchViewModel.SearchRegion;
+
+            var selectedClient = _configuration["SelectedHttpClient"];
+
+            if (!string.IsNullOrEmpty(selectedClient))
+                searchViewModel.SearchEngineName = _configuration[$"HttpClientSettings:{selectedClient}:SearchEngineName"];
+
+            return searchViewModel;
         }
     }
 }

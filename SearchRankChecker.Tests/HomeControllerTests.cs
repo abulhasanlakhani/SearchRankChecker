@@ -79,16 +79,20 @@ namespace SearchRankChecker.Tests
         [Test]
         public async Task Search_Post_Action_Returns_Redirect_To_Action_Result_With_Rank_String()
         {
-            var result = await _homeController.Search(new Search
+            var searchModel = new Search
             {
                 SearchKeywords = "online title search",
                 UrlToSearch = "http://www.infotrack.com.au"
-            });
+            };
 
-            var redirectToActionResult = (RedirectToActionResult) result;
+            var searchViewModel = new SearchViewModel();
             
-            Assert.That(result, Is.TypeOf<RedirectToActionResult>());
-            Assert.That(redirectToActionResult.ActionName, Is.EqualTo("Index"));
+            var result = await _homeController.Index(searchModel, searchViewModel);
+
+            var viewResult = (ViewResult) result;
+            
+            Assert.That(result, Is.TypeOf<ViewResult>());
+            Assert.That(viewResult.ViewName, Is.EqualTo("Index"));
         }
 
         [Test]
@@ -112,11 +116,15 @@ namespace SearchRankChecker.Tests
             _mockRankCalculator.Setup(_ => _.GetUrlRanksFromSearchResults(It.IsAny<string>(), It.IsAny<Uri>()))
                 .Throws<ArgumentException>();
 
-            var result = await _homeController.Search(new Search
+            var searchModel = new Search
             {
                 SearchKeywords = "online title search",
                 UrlToSearch = "http://www.infotrack.com.au"
-            });
+            };
+
+            var searchViewModel = new SearchViewModel();
+
+            var result = await _homeController.Index(searchModel, searchViewModel);
 
             var redirectToActionResult = (RedirectToActionResult) result;
             
@@ -130,11 +138,15 @@ namespace SearchRankChecker.Tests
             _mockCrawlService.Setup(_ => _.GetSearchResults(It.IsAny<string>()))
                 .Throws<HttpRequestException>();
 
-            var result = await _homeController.Search(new Search
+            var searchModel = new Search
             {
                 SearchKeywords = "online title search",
                 UrlToSearch = "http://www.infotrack.com.au"
-            });
+            };
+
+            var searchViewModel = new SearchViewModel();
+
+            var result = await _homeController.Index(searchModel, searchViewModel);
 
             var redirectToActionResult = (RedirectToActionResult) result;
             
@@ -147,11 +159,15 @@ namespace SearchRankChecker.Tests
         {
             _homeController.ModelState.AddModelError("Dummy Error", "Dummy Error Message");
 
-            var result = await _homeController.Search(new Search
+            var searchModel = new Search
             {
                 SearchKeywords = "online title search",
                 UrlToSearch = "http://www.infotrack.com.au"
-            });
+            };
+
+            var searchViewModel = new SearchViewModel();
+
+            var result = await _homeController.Index(searchModel, searchViewModel);
 
             var viewResult = (ViewResult) result;
             
@@ -163,11 +179,15 @@ namespace SearchRankChecker.Tests
         [Test]
         public async Task Search_Post_Action_Returns_Error_View_When_Uri_Is_Invalid()
         {
-            var result = await _homeController.Search(new Search
+            var searchModel = new Search
             {
                 SearchKeywords = "online title search",
                 UrlToSearch = "http:wwwinfotrack.com.au"
-            });
+            };
+
+            var searchViewModel = new SearchViewModel();
+
+            var result = await _homeController.Index(searchModel, searchViewModel);
 
             var viewResult = (ViewResult) result;
             
