@@ -1,7 +1,6 @@
 # Search Rank Checker
 
-[![Build Status](https://travis-ci.org/abulhasanlakhani/SearchRankChecker.svg?branch=master)](https://travis-ci.org/abulhasanlakhani/SearchRankChecker)
-[![Coverage Status](https://coveralls.io/repos/github/abulhasanlakhani/SearchRankChecker/badge.svg?branch=master)](https://coveralls.io/github/abulhasanlakhani/SearchRankChecker?branch=master)
+[![Build Status](https://dev.azure.com/SearchRankChecker/MyProject/_apis/build/status/searchrankchecker%20-%20CI?branchName=master)](https://dev.azure.com/SearchRankChecker/MyProject/_build/latest?definitionId=1&branchName=master)
 
 ## Description
 
@@ -13,11 +12,11 @@ User should be able to enter the desired url and the keywords in the given UI. C
 
 ## Programming Language / Technology Used
 
-* .Net Core 3.1
-* Asp.Net Core MVC 3.1
-* C#
-* NUnit
-* Moq
+- .Net Core 3.1
+- Asp.Net Core MVC 3.1
+- C#
+- NUnit
+- Moq
 
 ## UI
 
